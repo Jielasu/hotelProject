@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>使用者資訊</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #F5F7FA;
+    }
+    .user-info-card {
+      max-width: 430px;
+      margin: 2rem auto;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      background: #fff;
+      padding: 2rem 2.5rem 1.5rem 2.5rem;
+    }
+    .form-label {
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <div class="user-info-card">
+    <form id="userInfoForm" autocomplete="off" novalidate>
+      <h2 class="text-center mb-4">使用者資訊</h2>
+      <div class="mb-3">
+        <label for="userName" class="form-label">使用者名稱：</label>
+        <input type="text" class="form-control" id="userName" name="userName" required placeholder="請輸入姓名">
+      </div>
+      <div class="mb-3">
+        <label for="userPhone" class="form-label">手機號碼：</label>
+        <input type="tel" class="form-control" id="userPhone" name="userPhone" required placeholder="09xxxxxxxx">
+      </div>
+      <div class="mb-3">
+        <label for="userAddress" class="form-label">聯絡地址：</label>
+        <input type="text" class="form-control" id="userAddress" name="userAddress" required placeholder="請輸入聯絡地址">
+      </div>
+      <div class="mb-3">
+        <label for="userEmail" class="form-label">電子信箱：</label>
+        <input type="email" class="form-control" id="userEmail" name="userEmail" required placeholder="請輸入電子信箱">
+      </div>
+      <button class="btn btn-primary w-100" type="submit">送出</button>
+      <div id="userInfoMsg" style="margin-top:1rem;text-align:center;"></div>
+    </form>
+  </div>
+  <script>
+    const form = document.getElementById('userInfoForm');
+    // 載入時自動取得個人資訊
+    window.addEventListener('DOMContentLoaded', async function() {
+      try {
+        const res = await fetch('http://34.207.90.56:8080/api/users/profile');
+        if (!res.ok) throw new Error('取得失敗');
+        const data = await res.json();
+        form.userName.value = data.userName || '';
+        form.userPhone.value = data.userPhone || '';
+        form.userAddress.value = data.userAddress || '';
+        form.userEmail.value = data.userEmail || '';
+      } catch (err) {
+        document.getElementById('userInfoMsg').textContent = '無法取得個人資訊';
+      }
+    });
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const userName = form.userName.value.trim();
+      const userPhone = form.userPhone.value.trim();
+      const userAddress = form.userAddress.value.trim();
+      const userEmail = form.userEmail.value.trim();
+      // 這裡可以加上前端驗證或送出API
+      document.getElementById('userInfoMsg').textContent = '已送出（僅前端展示）';
+    });
+    //待修改
+  </script>
+
+</body>
+</html> 
