@@ -23,55 +23,50 @@
   </style>
 </head>
 <body>
+  <nav class="navbar navbar-light bg-white shadow-sm mb-4" style="border-radius:0 0 10px 10px;">
+    <div class="container-fluid justify-content-between align-items-center">
+      <div style="width:70px;"></div> <!-- 左側佔位 -->
+      <div class="mx-auto">
+        <a href="search.html" class="btn btn-primary">前往搜尋頁面</a>
+      </div>
+      <a href="logout.html" class="btn btn-outline-danger btn-sm">登出</a>
+    </div>
+  </nav>
   <div class="user-info-card">
-    <form id="userInfoForm" autocomplete="off" novalidate>
-      <h2 class="text-center mb-4">使用者資訊</h2>
-      <div class="mb-3">
-        <label for="userName" class="form-label">使用者名稱：</label>
-        <input type="text" class="form-control" id="userName" name="userName" required placeholder="請輸入姓名">
-      </div>
-      <div class="mb-3">
-        <label for="userPhone" class="form-label">手機號碼：</label>
-        <input type="tel" class="form-control" id="userPhone" name="userPhone" required placeholder="09xxxxxxxx">
-      </div>
-      <div class="mb-3">
-        <label for="userAddress" class="form-label">聯絡地址：</label>
-        <input type="text" class="form-control" id="userAddress" name="userAddress" required placeholder="請輸入聯絡地址">
-      </div>
-      <div class="mb-3">
-        <label for="userEmail" class="form-label">電子信箱：</label>
-        <input type="email" class="form-control" id="userEmail" name="userEmail" required placeholder="請輸入電子信箱">
-      </div>
-      <button class="btn btn-primary w-100" type="submit">送出</button>
-      <div id="userInfoMsg" style="margin-top:1rem;text-align:center;"></div>
-    </form>
+    <h2 class="text-center mb-4">使用者資訊</h2>
+    <div class="mb-3">
+      <label class="form-label">使用者名稱：</label>
+      <div id="userName" class="form-control-plaintext"></div>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">手機號碼：</label>
+      <div id="userPhone" class="form-control-plaintext"></div>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">聯絡地址：</label>
+      <div id="userAddress" class="form-control-plaintext"></div>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">電子信箱：</label>
+      <div id="userEmail" class="form-control-plaintext"></div>
+    </div>
+    <div id="userInfoMsg" style="margin-top:1rem;text-align:center;"></div>
   </div>
   <script>
-    const form = document.getElementById('userInfoForm');
     // 載入時自動取得個人資訊
     window.addEventListener('DOMContentLoaded', async function() {
       try {
-        const res = await fetch('http://34.207.90.56:8080/api/users/profile');
+        const res = await fetch('http://34.207.90.56:8080/api/users');
         if (!res.ok) throw new Error('取得失敗');
         const data = await res.json();
-        form.userName.value = data.userName || '';
-        form.userPhone.value = data.userPhone || '';
-        form.userAddress.value = data.userAddress || '';
-        form.userEmail.value = data.userEmail || '';
+        document.getElementById('userName').textContent = data.userName || '';
+        document.getElementById('userPhone').textContent = data.userPhone || '';
+        document.getElementById('userAddress').textContent = data.userAddress || '';
+        document.getElementById('userEmail').textContent = data.userEmail || '';
       } catch (err) {
         document.getElementById('userInfoMsg').textContent = '無法取得個人資訊';
       }
     });
-    form.addEventListener('submit', function(e) {
-      e.preventDefault();
-      const userName = form.userName.value.trim();
-      const userPhone = form.userPhone.value.trim();
-      const userAddress = form.userAddress.value.trim();
-      const userEmail = form.userEmail.value.trim();
-      // 這裡可以加上前端驗證或送出API
-      document.getElementById('userInfoMsg').textContent = '已送出（僅前端展示）';
-    });
-    //待修改
   </script>
 
 </body>

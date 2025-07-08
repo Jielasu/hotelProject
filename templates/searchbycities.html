@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>飯店城市選單</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #F5F7FA;
+      /* min-height: 100vh;  // 已移除，讓內容可自由上下滾動 */
+      /* 不設 overflow 或固定高度，讓內容可滾動 */
+    }
+    .container-custom {
+      max-width: 600px;
+      margin: 3rem auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      padding: 2.5rem 2rem 2rem 2rem;
+      /* 不設 height 或 overflow，讓內容可隨內容增長 */
+    }
+    .city-title {
+      text-align: center;
+      font-size: 2rem;
+      font-weight: 600;
+      margin-bottom: 2rem;
+      color: #007bff;
+    }
+    #hotelList {
+      min-height: 120px;
+      margin-top: 2rem;
+    }
+    #hotelList ul {
+      padding-left: 1.2rem;
+    }
+    #paginationContainer {
+      margin-top: 2.5rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      position: static;
+      background: none;
+      box-shadow: none;
+    }
+    #paginationContainer select,
+    #paginationContainer button {
+      padding: 5px 14px;
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-light bg-white shadow-sm mb-4" style="border-radius:0 0 10px 10px;">
+    <div class="container-fluid d-flex justify-content-between align-items-center">
+      <div style="width:100px;"></div> <!-- 左側佔位，寬度與右側一致 -->
+      <div class="flex-grow-1 d-flex justify-content-center">
+        <a href="user_info.html" class="btn btn-primary">個人資訊</a>
+      </div>
+      <div style="width:100px; text-align:right;">
+        <a href="logout.html" class="btn btn-outline-danger btn-sm">登出</a>
+      </div>
+    </div>
+  </nav>
+  <div class="container-custom">
+    <div class="city-title">選擇城市</div>
+    <div class="mb-3 d-flex justify-content-center">
+      <select id="cityDropdown" class="form-select w-auto">
+        <option value="">載入中...</option>
+      </select>
+    </div>
+    <div id="hotelList"></div>
+    <div id="paginationContainer">
+      <button id="prevBtn" class="btn btn-outline-primary btn-sm" disabled>上一頁</button>
+      <label for="pageSelect" class="mb-0">頁數：</label>
+      <select id="pageSelect" class="form-select form-select-sm w-auto" disabled>
+        <option>無資料</option>
+      </select>
+      <button id="nextBtn" class="btn btn-outline-primary btn-sm" disabled>下一頁</button>
+    </div>
+  </div>
+  <script>
+    const DROPDOWN_ID = 'cityDropdown';
+    const HOTEL_LIST_ID = 'hotelList';
+    const PAGE_SELECT_ID = 'pageSelect';
+    const PAGE_SIZE = 20;
+    let currentCity = '';
+    let totalPages = 0;
+    let currentPage = 0;
+
+const cityNameMapping = [
+  "彰化縣", "嘉義市", "嘉義縣", "新竹市", "新竹縣",
+  "花蓮市", "高雄市", "基隆市", "金門市", "連江縣",
+  "苗栗市", "南投市", "新北市", "澎湖縣", "屏東縣",
+  "台中市", "台南市", "台北市", "台東縣", "桃園市",
+  "宜蘭縣", "雲林縣"
+];
+
+async function loadCityDropdown() {
+  const dropdown = document.getElementById('cityDropdown');
+  try {
+    const response = await fetch('http://34.207.90.56:8080/api/hotels/alltablename');
+    const data = await response.json();
+
+    dropdown.innerHTML = '<option value="">請選擇城市</option>';
+
+    data.forEach((cityCode, index) => {
+      const option = document.createElement('option');
+      option.value = cityCode;
+      option.textContent = cityNameMapping[index] || cityCode;
+      dropdown.appendChild(option);
+    });
+  } catch (error) {
+    dropdown.innerHTML = '<option value="">載入失敗</option>';
+    console.error('城市列表載入失敗：', error);
+  }
+}
+
+    async function fetchHotelCount(city) {
+      try {
+        const response = await fetch(`http://34.207.90.56:8080/api/hotels/hotelcountbycity?city=${encodeURIComponent(city)}`);
+        const json = await response.json();
+        return json.count;
+      } catch (error) {
+        console.error('取得飯店總數失敗：', error);
+        return 0;
+      }
+    }
+
+    async function fetchHotelList(city, page = 0) {
+      const listDiv = document.getElementById(HOTEL_LIST_ID);
+      const pageSelect = document.getElementById(PAGE_SELECT_ID);
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+
+      const start = page * PAGE_SIZE;
+      const end = start + PAGE_SIZE;
+
+      listDiv.innerHTML = '<div class="text-center text-secondary">載入中...</div>';
+      pageSelect.disabled = true;
+      prevBtn.disabled = true;
+      nextBtn.disabled = true;
+
+      try {
+        const response = await fetch(`http://34.207.90.56:8080/api/hotels/searchbycity?city=${encodeURIComponent(city)}&start=${start}&end=${end}`);
+        const hotels = await response.json();
+
+        if (hotels.length === 0) {
+          listDiv.innerHTML = '<div class="text-center text-danger">找不到資料</div>';
+          return;
+        }
+
+        let html = '';
+        hotels.forEach(hotel => {
+          html += `<div class="card mb-3">
+            <div class="card-body">
+              <div class="mb-2"><strong>名稱：</strong>${hotel.HotelName || ''}</div>
+              <div class="mb-2"><strong>區/市/鄉/鎮：</strong>${hotel.Town || ''}</div>
+              <div class="mb-2"><strong>地址：</strong>${hotel.StreetAddress || ''}</div>
+              <div class="mb-2"><strong>價格區間：</strong>NT$${hotel.LowestPrice || ''}～NT$${hotel.CeilingPrice || ''}</div>
+              <div class="mb-2"><strong>描述：</strong>${hotel.Description || ''}</div>
+            </div>
+          </div>`;
+        });
+        listDiv.innerHTML = html;
+
+        // 更新下拉選單和按鈕狀態
+        pageSelect.value = currentPage;
+        pageSelect.disabled = false;
+        prevBtn.disabled = currentPage === 0;
+        nextBtn.disabled = currentPage >= totalPages - 1;
+
+      } catch (error) {
+        listDiv.innerHTML = '<div class="text-center text-danger">載入失敗</div>';
+        console.error('取得飯店資料失敗：', error);
+      }
+    }
+
+    async function handleCityChange(city) {
+      const pageSelect = document.getElementById(PAGE_SELECT_ID);
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+
+      pageSelect.innerHTML = '<option>載入中...</option>';
+      pageSelect.disabled = true;
+      prevBtn.disabled = true;
+      nextBtn.disabled = true;
+
+      const totalCount = await fetchHotelCount(city);
+      totalPages = Math.ceil(totalCount / PAGE_SIZE);
+      currentPage = 0;
+
+      // 填入頁數下拉選單
+      pageSelect.innerHTML = '';
+      for (let i = 0; i < totalPages; i++) {
+        const option = document.createElement('option');
+        option.value = i;
+        option.textContent = `第 ${i + 1} 頁`;
+        pageSelect.appendChild(option);
+      }
+
+      fetchHotelList(city, currentPage);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadCityDropdown();
+
+      document.getElementById(DROPDOWN_ID).addEventListener('change', (e) => {
+        const city = e.target.value;
+        currentCity = city;
+        if (city) handleCityChange(city);
+        else {
+          document.getElementById(HOTEL_LIST_ID).innerHTML = '';
+          document.getElementById(PAGE_SELECT_ID).innerHTML = '<option>尚未載入</option>';
+        }
+      });
+
+      document.getElementById(PAGE_SELECT_ID).addEventListener('change', (e) => {
+        const page = parseInt(e.target.value);
+        if (currentCity) {
+          currentPage = page;
+          fetchHotelList(currentCity, currentPage);
+        }
+      });
+
+      document.getElementById('prevBtn').addEventListener('click', () => {
+        if (currentPage > 0) {
+          currentPage--;
+          fetchHotelList(currentCity, currentPage);
+        }
+      });
+
+      document.getElementById('nextBtn').addEventListener('click', () => {
+        if (currentPage < totalPages - 1) {
+          currentPage++;
+          fetchHotelList(currentCity, currentPage);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

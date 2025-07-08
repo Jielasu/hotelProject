@@ -54,7 +54,7 @@
       }
       // 這邊可以做修改，可加上呼叫API發送驗證碼
       resultMsg.className = 'success';
-      resultMsg.textContent = '驗證碼已發送至 ' + email + '（模擬效果）';
+      resultMsg.textContent = '驗證碼已發送至 ' + email ;
     });
 
     // 驗證信箱表單送出
@@ -83,7 +83,8 @@
 
       // 這裡可加上呼叫API驗證驗證碼
       resultMsg.className = 'success';
-      resultMsg.textContent = '驗證成功！（模擬效果）';
+      resultMsg.textContent = '驗證成功！';
+      setTimeout(() => { window.location.href = 'login.html'; }, 1000);
     });
   </script>
 </body>

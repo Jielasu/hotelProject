@@ -163,7 +163,8 @@
         const result = await res.json();
         if (result.success) {
           msgDiv.style.color = '#28a745';
-          msgDiv.textContent = '註冊成功！';
+          msgDiv.textContent = '註冊成功，正在跳轉驗證信箱...';
+          setTimeout(() => { window.location.href = 'verify.html'; }, 1000);
         } else {
           msgDiv.style.color = '#FF3B30';
           msgDiv.textContent = result.message || '註冊失敗，請檢查資料';
