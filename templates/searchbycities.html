@@ -200,6 +200,11 @@ async function loadCityDropdown() {
               <div class="mb-2"><strong>區/市/鄉/鎮：</strong>${hotel.Town || ''}</div>
               <div class="mb-2"><strong>地址：</strong>${hotel.StreetAddress || ''}</div>
               <div class="mb-2"><strong>價格區間：</strong>NT$${hotel.LowestPrice || ''}～NT$${hotel.CeilingPrice || ''}</div>
+              <div class="mb-2"><strong>聯絡電話：</strong>${hotel.Telephone ? hotel.Telephone : '無資料'}</div>
+              <div class="mb-2">
+                <strong>連結：</strong>
+                ${hotel.WebsiteURL ? `<a href="${hotel.WebsiteURL}" target="_blank" class="btn btn-sm btn-primary">點我連結</a>` : '無資料'}
+              </div>
               <div class="mb-2"><strong>描述：</strong>${hotel.Description || ''}</div>
             </div>
           </div>`;
